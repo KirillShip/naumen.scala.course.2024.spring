@@ -12,15 +12,36 @@ object Task2 extends App {
   case class RadiusVector(x: Int, y: Int)
   object RadiusVector {
     implicit val monoid: Monoid[RadiusVector] = ???
+    implicit val monoid: Monoid[RadiusVector] = new Monoid[RadiusVector] {
+      override def empty: RadiusVector = RadiusVector(0, 0)
+
+      override def combine(vec1: RadiusVector, vec2: RadiusVector): RadiusVector =
+        RadiusVector(vec1.x + vec2.x, vec1.y + vec2.y)
+    }
   }
   case class DegreeAngle(angel: Double)
   object DegreeAngle {
     implicit val monoid: Monoid[DegreeAngle] = ???
+    implicit val monoid: Monoid[DegreeAngle] = new Monoid[DegreeAngle] {
+      override def empty: DegreeAngle = DegreeAngle(0)
+
+      override def combine(a1: DegreeAngle, a2: DegreeAngle): DegreeAngle = DegreeAngle((a1.angel + a2.angel) % 360)
+    }
   }
 
   case class SquareMatrix[A : Monoid](values: ((A, A, A), (A, A, A), (A, A, A)))
   object SquareMatrix {
     implicit def monoid[A: Monoid]: Monoid[SquareMatrix[A]] = ???
+    implicit def monoid[A: Monoid]: Monoid[SquareMatrix[A]] = new Monoid[SquareMatrix[A]] {
+      override def empty: SquareMatrix[A] = {
+        val row = (Monoid[A].empty, Monoid[A].empty, Monoid[A].empty)
+        SquareMatrix(row.copy(), row.copy(), row.copy())
+      }
+
+      override def combine(m1: SquareMatrix[A], m2: SquareMatrix[A]): SquareMatrix[A] = {
+        new SquareMatrix[A](m1.values.combine(m2.values))
+      }
+    }
   }
 
   val radiusVectors = Vector(RadiusVector(0, 0), RadiusVector(0, 1), RadiusVector(-1, 1))
